@@ -5,7 +5,6 @@ const history = document.querySelector('.history');
 const display = document.querySelector('.display');
 
 let leftOperand = '';
-let currentOp = '';
 let justClickedOp = false;
 
 let digitCount = 1;
@@ -87,23 +86,48 @@ invert.addEventListener('click', () => {
 });
 
 const div = document.querySelector('.div');
-div.addEventListener('click', () => {
+div.addEventListener('click', processOperation);
+
+const mult = document.querySelector('.mult');
+mult.addEventListener('click', processOperation);
+
+const sub = document.querySelector('.sub');
+sub.addEventListener('click', processOperation);
+
+const addition = document.querySelector('.addition');
+addition.addEventListener('click', processOperation);
+
+function processOperation() {
     if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
-    currentOp = '/';
+    let currentOp = this.textContent;
     if (!history.textContent) {
         leftOperand = display.textContent;
         history.textContent = `${leftOperand} ${currentOp}`;
     } else if (!justClickedOp) {
-        display.textContent = divide(leftOperand, display.textContent);
+        let operator = history.textContent.slice(-1);
+        display.textContent = operate(operator, leftOperand, display.textContent);
         if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
             leftOperand = display.textContent;
             history.textContent = `${display.textContent} ${currentOp}`;
         } else {
             history.textContent += ' 0 /';
         }
+    } else if (currentOp !== history.textContent.slice(-1)) {
+        history.textContent = history.textContent.slice(0, -1) + currentOp;
     }
     justClickedOp = true;
-});
+}
+
+function operate(operator, num1, num2) {
+    if (operator === '/') {
+        return divide(num1, num2);
+    } else if (operator === 'x') {
+        return multiply(num1, num2);
+    } else if (operator === '-') {
+        return subtract(num1, num2);
+    }
+    return add(num1, num2);
+}
 
 function divide(num1, num2) {
     const operandOne = parseFloat(num1);
