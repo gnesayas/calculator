@@ -1,4 +1,4 @@
-const MAX_NUM_LENGTH = 20;
+const MAX_NUM_LENGTH = 23;
 const DIVISION_BY_ZERO_ERROR = 'Cannot divide by zero';
 
 const history = document.querySelector('.history');
@@ -18,10 +18,13 @@ nums.forEach((num) => {
 
 function processNumber() {
     const digit = this.textContent;
-    if (display.textContent === '0' ||
-        display.textContent === DIVISION_BY_ZERO_ERROR ||
-        justClickedOp) {
+    if (display.textContent === DIVISION_BY_ZERO_ERROR) {
+        history.textContent = '';
         display.textContent = digit;
+        digitCount = 1;
+    } else if (display.textContent === '0' || justClickedOp) {
+        display.textContent = digit;
+        digitCount = 1;
     } else if (digitCount < MAX_NUM_LENGTH) {
         display.textContent += digit;
         digitCount++;
@@ -43,8 +46,8 @@ sign.addEventListener('click', () => {
 
 const dot = document.querySelector('.dot');
 dot.addEventListener('click', () => {
-    if(display.textContent !== DIVISION_BY_ZERO_ERROR &&
-        !display.textContent.includes('.')) {
+    if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
+    if (!display.textContent.includes('.')) {
         display.textContent += '.';
     }
 });
@@ -59,6 +62,7 @@ clear.addEventListener('click', () => {
 
 const back = document.querySelector('.back');
 back.addEventListener('click', () => {
+    if (justClickedOp) return;
     if (display.textContent === DIVISION_BY_ZERO_ERROR ||
         display.textContent.length === 1 ||
         (display.textContent.length === 2 &&
@@ -78,25 +82,27 @@ back.addEventListener('click', () => {
 
 const invert = document.querySelector('.invert');
 invert.addEventListener('click', () => {
-    if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
-        display.textContent = divide(1, display.textContent);
-    }
+    if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
+    display.textContent = divide(1, display.textContent);
 });
 
 const div = document.querySelector('.div');
 div.addEventListener('click', () => {
-    if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
-        currentOp = '/';
-        if (!history.textContent) {
-            leftOperand = display.textContent;
-            history.textContent = `${leftOperand} ${currentOp}`;
-        } else if (!justClickedOp) {
-            display.textContent = divide(leftOperand, display.textContent);
+    if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
+    currentOp = '/';
+    if (!history.textContent) {
+        leftOperand = display.textContent;
+        history.textContent = `${leftOperand} ${currentOp}`;
+    } else if (!justClickedOp) {
+        display.textContent = divide(leftOperand, display.textContent);
+        if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
             leftOperand = display.textContent;
             history.textContent = `${display.textContent} ${currentOp}`;
+        } else {
+            history.textContent += ' 0 /';
         }
-        justClickedOp = true;
     }
+    justClickedOp = true;
 });
 
 function divide(num1, num2) {
