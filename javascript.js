@@ -1,11 +1,12 @@
 const MAX_NUM_LENGTH = 20;
 const DIVISION_BY_ZERO_ERROR = 'Cannot divide by zero';
-const INFINITY = 'inf';
 
+const history = document.querySelector('.history');
 const display = document.querySelector('.display');
 
-let currentSign = '+';
+let leftOperand = '';
 let currentOp = '';
+let justClickedOp = false;
 
 let digitCount = 1;
 
@@ -17,27 +18,25 @@ nums.forEach((num) => {
 
 function processNumber() {
     const digit = this.textContent;
-    if (currentOp === '') {
-        if (display.textContent === '0' ||
-            display.textContent === DIVISION_BY_ZERO_ERROR) {
-            display.textContent = digit;
-        } else if (digitCount < MAX_NUM_LENGTH) {
-            display.textContent += digit;
-            digitCount++;
-        }
+    if (display.textContent === '0' ||
+        display.textContent === DIVISION_BY_ZERO_ERROR ||
+        justClickedOp) {
+        display.textContent = digit;
+    } else if (digitCount < MAX_NUM_LENGTH) {
+        display.textContent += digit;
+        digitCount++;
     }
+    justClickedOp = false;
 }
 
 const sign = document.querySelector('.sign');
 sign.addEventListener('click', () => {
     if (display.textContent !== '0' &&
         display.textContent !== DIVISION_BY_ZERO_ERROR) {
-        if (currentSign === '+') {
+        if (display.textContent[0] !== '-') {
             display.textContent = '-' + display.textContent;
-            currentSign = '-';
         } else {
             display.textContent = display.textContent.substring(1);
-            currentSign = '+';
         }
     }
 });
@@ -52,9 +51,9 @@ dot.addEventListener('click', () => {
 
 const clear = document.querySelector('.clear')
 clear.addEventListener('click', () => {
+    history.textContent = '';
     display.textContent = 0;
     digitCount = 1;
-    currentSign = '+';
     currentOp = '';
 });
 
@@ -69,7 +68,6 @@ back.addEventListener('click', () => {
             display.textContent[1] === '0')) {
         display.textContent = 0;
         digitCount = 1;
-        currentSign = '+';
     } else {
         if (display.textContent.slice(-1) !== '.') {
             digitCount--;
@@ -81,57 +79,49 @@ back.addEventListener('click', () => {
 const invert = document.querySelector('.invert');
 invert.addEventListener('click', () => {
     if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
-        const num = parseFloat(display.textContent);
-        if (num === 0) {
-            display.textContent = DIVISION_BY_ZERO_ERROR;
-        } else {
-            display.textContent = truncate(1 / num);
-        }
+        display.textContent = divide(1, display.textContent);
     }
 });
 
-function truncate(num) {
-    let stringForm = handleSmallScientificNotation(num.toString());
-    let nonDigitCount = 0;
-    if (stringForm.includes('.')) {
-        nonDigitCount++;
-    }
-    if (stringForm.includes('-')) {
-        nonDigitCount++;
-    }
-    if (stringForm.length - nonDigitCount <= MAX_NUM_LENGTH) {
-        return stringForm;
-    }
-    let dotIndex = stringForm.indexOf('.');
-    if (dotIndex >= 0) {
-        let digitsToLeft = stringForm.includes('-') ? dotIndex - 1: dotIndex;
-        if (digitsToLeft > MAX_NUM_LENGTH) {
-            return stringForm.includes('-') ? '-' + INFINITY : INFINITY;
+const div = document.querySelector('.div');
+div.addEventListener('click', () => {
+    if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
+        currentOp = '/';
+        if (!history.textContent) {
+            leftOperand = display.textContent;
+            history.textContent = `${leftOperand} ${currentOp}`;
+        } else if (!justClickedOp) {
+            display.textContent = divide(leftOperand, display.textContent);
+            leftOperand = display.textContent;
+            history.textContent = `${display.textContent} ${currentOp}`;
         }
-        let truncatedNum = num.toFixed(MAX_NUM_LENGTH - digitsToLeft);
-        return truncatedNum;
+        justClickedOp = true;
     }
-    if (nonDigitCount === 1) {
-        if (stringForm.substring(1).length > MAX_NUM_LENGTH) {
-            return '-' + INFINITY;
-        }
-        return num;
-    } else if (stringForm.length > MAX_NUM_LENGTH) {
-        return INFINITY;
+});
+
+function divide(num1, num2) {
+    const operandOne = parseFloat(num1);
+    const operandTwo = parseFloat(num2);
+    if (operandTwo === 0) {
+        return DIVISION_BY_ZERO_ERROR;
     }
-    return num;
+    return operandOne / operandTwo;
 }
 
-function handleSmallScientificNotation(string) {
-    if (!string.includes('e')) return string;
-    let eIdx = string.indexOf('e');
-    let spotsToMoveOver = +string.slice(eIdx + 2);
-    let result = string[0] === '-' ? '-0.' : '0.';
-    for (let i = 0; i < spotsToMoveOver - 1; i++) {
-        result += '0';
-    }
-    if (string[0] !== '-') {
-        return result + string[0] + string.substring(2, eIdx);
-    }
-    return result + string[1] + string.substring(3, eIdx);
+function multiply(num1, num2) {
+    const operandOne = parseFloat(num1);
+    const operandTwo = parseFloat(num2);
+    return operandOne * operandTwo;
+}
+
+function subtract(num1, num2) {
+    const operandOne = parseFloat(num1);
+    const operandTwo = parseFloat(num2);
+    return operandOne - operandTwo;
+}
+
+function add(num1, num2) {
+    const operandOne = parseFloat(num1);
+    const operandTwo = parseFloat(num2);
+    return operandOne + operandTwo;
 }
