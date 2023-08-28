@@ -1,5 +1,7 @@
 const MAX_NUM_LENGTH = 23;
 const DIVISION_BY_ZERO_ERROR = 'Cannot divide by zero';
+const NUM_KEYS = '0123456789';
+const OP_KEYS = '/*-+';
 
 const history = document.querySelector('.history');
 const display = document.querySelector('.display');
@@ -12,14 +14,35 @@ let justEvaluated = false;
 
 let digitCount = 1;
 
+document.addEventListener('keydown', (e) => {
+    console.log(e.key);
+    if (NUM_KEYS.includes(e.key)) {
+        processNumber(e.key);
+    } else if (e.key === '.') {
+        addDecimal();
+    } else if (e.key === 'Escape') {
+        reset();
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        goBack();
+    } else if (OP_KEYS.includes(e.key)) {
+        if (e.key === '*') {
+            processOperation('x');
+        } else {
+            processOperation(e.key);
+        }
+    } else if (e.key === 'Enter' || e.key === '=') {
+        processEvaluation();
+    }
+});
+
 const nums = document.querySelectorAll('.num');
 
 nums.forEach((num) => {
     num.addEventListener('click', processNumber);
 });
 
-function processNumber() {
-    const digit = this.textContent;
+function processNumber(key) {
+    const digit = this.textContent ? this.textContent : key;
     if (display.textContent === DIVISION_BY_ZERO_ERROR) {
         history.textContent = '';
         display.textContent = digit;
@@ -48,15 +71,19 @@ sign.addEventListener('click', () => {
 });
 
 const dot = document.querySelector('.dot');
-dot.addEventListener('click', () => {
+dot.addEventListener('click', addDecimal);
+
+function addDecimal() {
     if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
     if (!display.textContent.includes('.')) {
         display.textContent += '.';
     }
-});
+}
 
 const clear = document.querySelector('.clear')
-clear.addEventListener('click', () => {
+clear.addEventListener('click', reset);
+
+function reset() {
     history.textContent = '';
     display.textContent = 0;
     digitCount = 1;
@@ -65,10 +92,12 @@ clear.addEventListener('click', () => {
     rightOperand = '';
     justClickedOperator = false;
     justEvaluated = false;
-});
+}
 
 const back = document.querySelector('.back');
-back.addEventListener('click', () => {
+back.addEventListener('click', goBack);
+
+function goBack() {
     if (justClickedOperator || justEvaluated) return;
     if (display.textContent === DIVISION_BY_ZERO_ERROR ||
         display.textContent.length === 1 ||
@@ -85,7 +114,7 @@ back.addEventListener('click', () => {
         }
         display.textContent = display.textContent.slice(0, -1);
     }
-});
+}
 
 const invert = document.querySelector('.invert');
 invert.addEventListener('click', () => {
@@ -129,9 +158,9 @@ addition.addEventListener('click', processOperation);
 const eval = document.querySelector('.eval');
 eval.addEventListener('click', processEvaluation);
 
-function processOperation() {
+function processOperation(key) {
     if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
-    let currentOp = this.textContent;
+    let currentOp = this.textContent ? this.textContent : key;
     if (justEvaluated || !history.textContent) {
         operator = currentOp;
         leftOperand = display.textContent;
