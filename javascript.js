@@ -5,7 +5,7 @@ const history = document.querySelector('.history');
 const display = document.querySelector('.display');
 
 let leftOperand = '';
-let justClickedOp = false;
+let justClickedOperator = false;
 
 let digitCount = 1;
 
@@ -21,14 +21,14 @@ function processNumber() {
         history.textContent = '';
         display.textContent = digit;
         digitCount = 1;
-    } else if (display.textContent === '0' || justClickedOp) {
+    } else if (display.textContent === '0' || justClickedOperator) {
         display.textContent = digit;
         digitCount = 1;
     } else if (digitCount < MAX_NUM_LENGTH) {
         display.textContent += digit;
         digitCount++;
     }
-    justClickedOp = false;
+    justClickedOperator = false;
 }
 
 const sign = document.querySelector('.sign');
@@ -61,7 +61,7 @@ clear.addEventListener('click', () => {
 
 const back = document.querySelector('.back');
 back.addEventListener('click', () => {
-    if (justClickedOp) return;
+    if (justClickedOperator) return;
     if (display.textContent === DIVISION_BY_ZERO_ERROR ||
         display.textContent.length === 1 ||
         (display.textContent.length === 2 &&
@@ -83,6 +83,21 @@ const invert = document.querySelector('.invert');
 invert.addEventListener('click', () => {
     if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
     display.textContent = divide(1, display.textContent);
+    justClickedOperator = false;
+});
+
+const square = document.querySelector('.square');
+square.addEventListener('click', () => {
+    if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
+    display.textContent = multiply(display.textContent, display.textContent);
+    justClickedOperator = false;
+});
+
+const root = document.querySelector('.root');
+root.addEventListener('click', () => {
+    if (display.textContent === DIVISION_BY_ZERO_ERROR) return;
+    display.textContent = Math.sqrt(display.textContent);
+    justClickedOperator = false;
 });
 
 const div = document.querySelector('.div');
@@ -103,7 +118,7 @@ function processOperation() {
     if (!history.textContent) {
         leftOperand = display.textContent;
         history.textContent = `${leftOperand} ${currentOp}`;
-    } else if (!justClickedOp) {
+    } else if (!justClickedOperator) {
         let operator = history.textContent.slice(-1);
         display.textContent = operate(operator, leftOperand, display.textContent);
         if (display.textContent !== DIVISION_BY_ZERO_ERROR) {
@@ -115,7 +130,7 @@ function processOperation() {
     } else if (currentOp !== history.textContent.slice(-1)) {
         history.textContent = history.textContent.slice(0, -1) + currentOp;
     }
-    justClickedOp = true;
+    justClickedOperator = true;
 }
 
 function operate(operator, num1, num2) {
