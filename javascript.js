@@ -15,7 +15,7 @@ let justEvaluated = false;
 let digitCount = 1;
 
 document.addEventListener('keydown', (e) => {
-    console.log(e.key);
+    e.preventDefault();
     if (NUM_KEYS.includes(e.key)) {
         processNumber(e.key);
     } else if (e.key === '.') {
@@ -47,14 +47,20 @@ function processNumber(key) {
         history.textContent = '';
         display.textContent = digit;
         digitCount = 1;
-    } else if (display.textContent === '0' || justClickedOperator) {
+    } else if (display.textContent === '0' || justClickedOperator ||
+        justEvaluated) {
         display.textContent = digit;
         digitCount = 1;
+        if (justEvaluated) {
+            history.textContent = '';
+            leftOperand = '';
+        }
     } else if (digitCount < MAX_NUM_LENGTH) {
         display.textContent += digit;
         digitCount++;
     }
     justClickedOperator = false;
+    justEvaluated = false;
     rightOperand = '';
 }
 
